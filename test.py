@@ -1,4 +1,4 @@
-
+import re
 if __name__ == '__main__':
 
     input = """400..300..
@@ -10,6 +10,7 @@ if __name__ == '__main__':
     i =0
     j = 0
     symbolatpos = -3
+    arraylist = []
     previousline = ''
     numbers_at_pos = []
     numbers_at_posPrev= []
@@ -21,10 +22,13 @@ if __name__ == '__main__':
                 numbers_at_pos.append(j)
             j += 1
             ## check if some thing from the list is in the the line and where--> list of symbolsatpos
+
+        for m in re.finditer('*#', line):
+            arraylist= arraylist.append(int(m.start()))
         if symbolList in line:
             symbolatpos = line.find(symbolList)
         i += 1
-
+        print(f"Arraylist {arraylist}")
         k =0
         symbolatposList = [3,8]
         if not previousline== '':
