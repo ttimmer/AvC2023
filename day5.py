@@ -1,19 +1,23 @@
 import re
 def map_solution(seeds,map):
     mapped_values = seeds
+    indexesAlreadyDone = []
     for entry in map:
         numbers = re.findall(r'\d+', entry);
         seedindex=0
         for seed in seeds:
-            if int(seed) >= int(numbers[1]) and int(seed) <= int(numbers[1])+int(numbers[2]):
+           # print(f"Seed is {seed} and range is {numbers[1]} -{int(numbers[1])+int(numbers[2])} ")
+            if int(seed) >= int(numbers[1]) and int(seed) <= int(numbers[1])+int(numbers[2]) and not (seedindex in indexesAlreadyDone):
                 mapped_values[seedindex] = int(seed) + int(numbers[0])-int(numbers[1])
+                indexesAlreadyDone.append(seedindex)
             seedindex+=1
     return mapped_values
 
 def perform_solution(input):
     input_lines = input.split("\n")
-    print(input_lines)
     seeds = re.findall(r'\d+', input_lines[1]);
+
+
     index = 0
     xseed2soil = False
     aseed2soil = []
@@ -26,9 +30,9 @@ def perform_solution(input):
     xLight2Temp = False
     aLight2Temp = []
     xtemp2humid = False
-    atemp2humid  = []
+    atemp2humid = []
     xHumidity2Loc = False
-    aHumidity2Loc  = []
+    aHumidity2Loc = []
     for line in input_lines:
         if line == '':
             xseed2soil = False
@@ -54,6 +58,85 @@ def perform_solution(input):
         elif xHumidity2Loc:
             aHumidity2Loc.append(line)
 
+        if line == 'seed-to-soil map:':
+            xseed2soil = True
+        elif line == 'soil-to-fertilizer map:':
+            xsoil2fertilizer = True
+        elif line == 'fertilizer-to-water map:':
+            xfertilizer2water = True
+        elif line == 'water-to-light map:':
+            xwater2light = True
+        elif line == 'light-to-temperature map:':
+            xLight2Temp = True
+        elif line == 'temperature-to-humidity map:':
+            xtemp2humid = True
+        elif line == 'humidity-to-location map:':
+            xHumidity2Loc = True
+
+        index += 1
+    asoil= map_solution(seeds,aseed2soil)
+    afertilizer= map_solution(asoil,asoil2fertilizer)
+    awater= map_solution(afertilizer,afertilizer2waterr)
+    alight= map_solution(awater,awater2light)
+    atemp= map_solution(alight,aLight2Temp)
+    ahumid= map_solution(atemp,atemp2humid)
+    alocation= map_solution(ahumid,aHumidity2Loc)
+    abiggestlocation = 999999999999999999999999999999999999999999999999999999999999999999999999999999999
+    for location in alocation:
+        if int(location)<abiggestlocation:
+            abiggestlocation=int(location)
+    return(abiggestlocation)
+
+def perform_solution2(input):
+    input_lines = input.split("\n")
+    seeds = re.findall(r'\d+', input_lines[1]);
+    new_seeds = []
+    count = 0
+    for i in range(int(len(seeds)/2)):
+        print(f"Progress: {i+1}/{int(len(seeds)/2)}")
+        for j in range(int(seeds[2*i]),(int(seeds[2*i])+int(seeds[2*i+1]))):
+            new_seeds.append(j)
+
+    seeds = new_seeds
+    index = 0
+    xseed2soil = False
+    aseed2soil = []
+    xsoil2fertilizer = False
+    asoil2fertilizer = []
+    xfertilizer2water = False
+    afertilizer2waterr = []
+    xwater2light = False
+    awater2light = []
+    xLight2Temp = False
+    aLight2Temp = []
+    xtemp2humid = False
+    atemp2humid = []
+    xHumidity2Loc = False
+    aHumidity2Loc = []
+    for line in input_lines:
+        if line == '':
+            xseed2soil = False
+            xsoil2fertilizer = False
+            xfertilizer2water = False
+            xwater2light = False
+            xLight2Temp = False
+            xtemp2humid = False
+            xHumidity2Loc = False
+
+        if xseed2soil:
+            aseed2soil.append(line)
+        elif xsoil2fertilizer:
+            asoil2fertilizer.append(line)
+        elif xfertilizer2water:
+            afertilizer2waterr.append(line)
+        elif xwater2light:
+            awater2light.append(line)
+        elif xLight2Temp:
+            aLight2Temp.append(line)
+        elif xtemp2humid:
+            atemp2humid.append(line)
+        elif xHumidity2Loc:
+            aHumidity2Loc.append(line)
 
         if line == 'seed-to-soil map:':
             xseed2soil = True
@@ -70,24 +153,24 @@ def perform_solution(input):
         elif line == 'humidity-to-location map:':
             xHumidity2Loc = True
 
-
-
-        index+=1
-
-    asoil= map_solution(seeds,aseed2soil)
-    afertilizer= map_solution(asoil,asoil2fertilizer)
-    awater= map_solution(afertilizer,afertilizer2waterr)
-    alight= map_solution(awater,awater2light)
-    atemp= map_solution(alight,aLight2Temp)
-    ahumid= map_solution(atemp,atemp2humid)
-    alocation= map_solution(ahumid,aHumidity2Loc)
+        index += 1
+    asoil = map_solution(seeds, aseed2soil)
+    afertilizer = map_solution(asoil, asoil2fertilizer)
+    awater = map_solution(afertilizer, afertilizer2waterr)
+    alight = map_solution(awater, awater2light)
+    atemp = map_solution(alight, aLight2Temp)
+    ahumid = map_solution(atemp, atemp2humid)
+    alocation = map_solution(ahumid, aHumidity2Loc)
     abiggestlocation = 999999999999999999999999999999999999999999999999999999999999999999999999999999999
     for location in alocation:
-        if int(location)<abiggestlocation:
-            abiggestlocation=int(location)
-    return(abiggestlocation)
-def perform_solution2(input):
-    print("not implemented yet")
+        if int(location) < abiggestlocation:
+            abiggestlocation = int(location)
+    return (abiggestlocation)
+
+
+
+
+
 
 if __name__ == '__main__':
     input_test = """seeds:
@@ -126,11 +209,12 @@ humidity-to-location map:
 56 93 4"""
     solution_test1 = 35
     if (solution_test1== perform_solution(input_test)):
-        print("Yay")
+        print("Test 1 works")
     else:
         print(perform_solution(input_test))
 
-    input_actual ="""seeds: 4188359137 37519573 3736161691 172346126 2590035450 66446591 209124047 106578880 1404892542 30069991 3014689843 117426545 2169439765 226325492 1511958436 177344330 1822605035 51025110 382778843 823998526
+    input_actual ="""seeds:
+4188359137 37519573 3736161691 172346126 2590035450 66446591 209124047 106578880 1404892542 30069991 3014689843 117426545 2169439765 226325492 1511958436 177344330 1822605035 51025110 382778843 823998526
 
 seed-to-soil map:
 1014943420 3864598346 36796924
@@ -370,3 +454,10 @@ humidity-to-location map:
 
 
     print(perform_solution(input_actual))
+    solution_test2=46
+    if (solution_test2== (perform_solution2(input_test))):
+        print("Test 2 works")
+    else:
+        print(perform_solution2(input_test))
+
+    print(perform_solution2(input_actual))
