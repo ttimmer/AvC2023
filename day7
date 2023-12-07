@@ -51,7 +51,7 @@ def sorting(cards):
         card = cards[i]
         for j in range(i+1,len(cards)):
             othercard = cards[j]
-            for k in range(0,4):
+            for k in range(0,5):
                 if card.cards[k]==othercard.cards[k]:
                     continue
                 elif getcardvalue1(card.cards[k]) > getcardvalue1(othercard.cards[k]):
@@ -59,6 +59,7 @@ def sorting(cards):
                     break
                 elif getcardvalue1(card.cards[k]) < getcardvalue1(othercard.cards[k]):
                     cards[j].sorted +=1
+                    break
     sorted_hands = sorted(cards, key=lambda Card:(Card.sorted))
     return sorted_hands
 
@@ -89,13 +90,14 @@ def perform_solution(input):
     hands.extend(sorting(full_house_hands))
     Four_kind = [card for card in sorted_hands if card.rank == "Four of a kind"]
     hands.extend(sorting(Four_kind))
-    five_kind = [card for card in sorted_hands if card.rank == "five_kind"]
+    five_kind = [card for card in sorted_hands if card.rank == "Five of a kind"]
     hands.extend(sorting(five_kind))
 
     i=0
     totalsum=0
     for hand in hands:
         i+=1
+        print(f"Hand {hand.cards} with type = {hand.rank} bid {hand.bid} entry{i}")
         totalsum += int(hand.bid)*i
     return totalsum
 def perform_solution2(input):
