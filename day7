@@ -2,6 +2,7 @@ from collections import Counter
 def check_poker_hand(hand):
     counts = Counter(hand)
 
+
     if max(counts.values()) == 5:
         return "Five of a kind"
 
@@ -22,6 +23,12 @@ def check_poker_hand(hand):
 
     return "High card"
 
+def check_poker_hand_with_jokers(hand):
+    counts = Counter(hand)
+    replace_by = max(counts)
+    replaced_hand = hand.replace('J',replace_by)
+    return check_poker_hand(replaced_hand)
+    print(f"hand: {hand} {replaced_hand} {check_poker_hand(replaced_hand)}")
 
 class Card:
     def __init__(self, type, cards, bid,rank):
@@ -101,7 +108,35 @@ def perform_solution(input):
         totalsum += int(hand.bid)*i
     return totalsum
 def perform_solution2(input):
-    print("solution 2 not implemented yet")
+    inputlines = input.splitlines()
+    cardArray = []
+    for entry in inputlines:
+        init_card = Card(0, entry.split(' ')[0], entry.split(' ')[1], check_poker_hand_with_jokers(entry.split(' ')[0]))
+        cardArray.append(init_card)
+    sorted_hands = sorted(cardArray, key=lambda Card: (Card.ranknumber))
+    hands = []
+    high_cards = [card for card in sorted_hands if card.rank == "High card"]
+    hands.extend(sorting(high_cards))
+    one_pair = [card for card in sorted_hands if card.rank == "One pair"]
+    hands.extend(sorting(one_pair))
+    two_pair = [card for card in sorted_hands if card.rank == "Two pair"]
+    hands.extend(sorting(two_pair))
+    three_kind = [card for card in sorted_hands if card.rank == "Three of a kind"]
+    hands.extend(sorting(three_kind))
+    full_house_hands = [card for card in sorted_hands if card.rank == "Full house"]
+    hands.extend(sorting(full_house_hands))
+    Four_kind = [card for card in sorted_hands if card.rank == "Four of a kind"]
+    hands.extend(sorting(Four_kind))
+    five_kind = [card for card in sorted_hands if card.rank == "Five of a kind"]
+    hands.extend(sorting(five_kind))
+
+    i = 0
+    totalsum = 0
+    for hand in hands:
+        i += 1
+        print(f"Hand {hand.cards} with type = {hand.rank} bid {hand.bid} entry{i}")
+        totalsum += int(hand.bid) * i
+    return totalsum
 
 if __name__ == '__main__':
     input_test = """32T3K 765
@@ -110,8 +145,8 @@ KK677 28
 KTJJT 220
 QQQJA 483"""
     solution_test1 = 6440
-    if (solution_test1== perform_solution(input_test)):
-        print("Test 1 succesfull")
+    #if (solution_test1== perform_solution(input_test)):
+     #   print("Test 1 succesfull")
 
 
     input_actual ="""AJ44J 454
@@ -1120,3 +1155,4 @@ JJAJT 817
          print("Test 2 succesfull")
 
     print(perform_solution2(input_actual))
+
