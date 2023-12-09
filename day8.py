@@ -22,11 +22,13 @@ def find_all_start(Move_list,start):
 def find_all_next(Move_list,move_to_list):
     new_list = []
     for moveto in move_to_list:
-        for move in Move_list:
-             if moveto in move.start:
-                new_list.append(move)
-             else:
-                pass
+        print(move_to_list)
+        if moveto[2]!='Z':
+            for move in Move_list:
+                 if moveto in move.start:
+                    new_list.append(move)
+                 else:
+                    pass
     return new_list
 def parse_input(input):
     input_lines= input.splitlines()
@@ -77,27 +79,28 @@ def perform_solution2(input):
        for position in currentpositions:
             if decision == 'L':
                 moveto = position.left
+                if position.left[2]=='Z':
+                    iterationlist.append(iterations+1)
             elif decision =='R':
                 moveto = position.right
+                if position.right[2]=='Z':
+                    iterationlist.append(iterations+1)
             elif decision == 'Z':
                 moveto = currentpositions
-                print(currentpositions)
-                iterationlist.append(iterations)
             moveto_list.append(moveto)
        iterations+=1
-       if decision!= 'Z':
-            currentpositions= find_all_next(move_list,moveto_list)
+       currentpositions= find_all_next(move_list,moveto_list)
        if sequencePos==len(sequence)-1:
            sequencePos= 0
        else:
            sequencePos+=1
 
    summed_value =1
+   print(iterationlist)
    for x in iterationlist:
        summed_value =summed_value*int(x)
-   print(summed_value)
 
-   return iterations
+   return summed_value
 
 if __name__ == '__main__':
     input_test = """LLR
