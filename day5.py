@@ -12,6 +12,56 @@ def map_solution(seeds,map):
                 indexesAlreadyDone.append(seedindex)
             seedindex+=1
     return mapped_values
+def map_solution_2(seed_ranges,map):
+    mapped_seed_ranges = []
+    print(seed_ranges)
+    for seed_range in seed_ranges:
+        entry = find_range(seed_range,map)
+        mapped_seed_ranges.extend(entry)
+    print(f"End of mapping total {mapped_seed_ranges}")
+    return mapped_seed_ranges
+
+def find_range(seed_range,map):
+    mapped_seed_ranges = []
+    print(f"Seed_range from ranges {seed_range}")
+    seed_range_start = seed_range[0]
+    seed_range_end = seed_range[1]
+    xFoundEntry = False
+    for entry in map:
+        numbers = re.findall(r'\d+', entry);
+        print(f"Should find {seed_range_start} to {seed_range_end} between {int(numbers[1])} and {int(numbers[1])+ int(numbers[2])} ")
+        if seed_range_start >= int(numbers[1]) and seed_range_end <= int(numbers[1])+int(numbers[2]): # fully in map
+            new_seed_start = int(seed_range_start) + int(numbers[0])-int(numbers[1])
+            new_seed_end = int(seed_range_end) + int(numbers[0])-int(numbers[1])
+            print(f"found completely")
+            mapped_seed_ranges.append([new_seed_start,new_seed_end])
+            print(f"End of mapping this range {mapped_seed_ranges}")
+            return mapped_seed_ranges
+        elif seed_range_start >= int(numbers[1]) and seed_range_start <=int(numbers[1])+int(numbers[2]): # start lies between map
+            print(f"found partly {seed_range_start} to {int(numbers[1])+int(numbers[2])} ")
+            new_seed_start = int(seed_range_start) + int(numbers[0])-int(numbers[1])
+            new_seed_end = int(numbers[1])+int(numbers[2]) + int(numbers[0])-int(numbers[1])
+            mapped_seed_ranges.append([new_seed_start,new_seed_end])
+            new_seed_start = int(numbers[1])+int(numbers[2]) + 1
+            new_seed_end = seed_range_end
+            mapped_seed_ranges.extend(find_range([new_seed_start,new_seed_end],map))
+            print(f"End of mapping this range {mapped_seed_ranges}")
+            return mapped_seed_ranges
+        elif seed_range_end >= int(numbers[1]) and seed_range_end <=int(numbers[1])+int(numbers[2]): # end lies between map
+            print(f"found partly {int(numbers[1])} to {int(numbers[1])+int(numbers[2])} ")
+            new_seed_start = int(seed_range_start)
+            new_seed_end = int(numbers[1])-1
+            mapped_seed_ranges.extend(find_range([new_seed_start,new_seed_end],map))
+            new_seed_start = int(numbers[1])+ int(numbers[0])-int(numbers[1])
+            new_seed_end = seed_range_end+ int(numbers[0])-int(numbers[1])
+            mapped_seed_ranges.append([new_seed_start,new_seed_end])
+            print(f"End of mapping this range {mapped_seed_ranges}")
+            return mapped_seed_ranges
+    if not xFoundEntry:
+        mapped_seed_ranges.append([seed_range_start,seed_range_end])
+        print(f'Not found so keeping as is {mapped_seed_ranges}')
+    print(f"End of mapping this range {mapped_seed_ranges}")
+    return mapped_seed_ranges
 
 def perform_solution(input):
     input_lines = input.split("\n")
@@ -91,12 +141,8 @@ def perform_solution2(input):
     input_lines = input.split("\n")
     seeds = re.findall(r'\d+', input_lines[1]);
     new_seeds = []
-    count = 0
     for i in range(int(len(seeds)/2)):
-        print(f"Progress: {i+1}/{int(len(seeds)/2)}")
-        for j in range(int(seeds[2*i]),(int(seeds[2*i])+int(seeds[2*i+1]))):
-            new_seeds.append(j)
-
+        new_seeds.append([int(seeds[2*i]), int(seeds[2*i])+int(seeds[2*i+1])])
     seeds = new_seeds
     index = 0
     xseed2soil = False
@@ -154,18 +200,29 @@ def perform_solution2(input):
             xHumidity2Loc = True
 
         index += 1
-    asoil = map_solution(seeds, aseed2soil)
-    afertilizer = map_solution(asoil, asoil2fertilizer)
-    awater = map_solution(afertilizer, afertilizer2waterr)
-    alight = map_solution(awater, awater2light)
-    atemp = map_solution(alight, aLight2Temp)
-    ahumid = map_solution(atemp, atemp2humid)
-    alocation = map_solution(ahumid, aHumidity2Loc)
+
+    asoil= map_solution_2(seeds,aseed2soil)
+    print(f"asoil {asoil}")
+    afertilizer= map_solution_2(asoil,asoil2fertilizer)
+    print(f"afertilizer {afertilizer}")
+    awater= map_solution_2(afertilizer,afertilizer2waterr)
+    print(f"awater {awater}")
+    alight= map_solution_2(awater,awater2light)
+    print(f"alight {alight}")
+    atemp= map_solution_2(alight,aLight2Temp)
+    print(f"atemp {atemp}")
+    ahumid= map_solution_2(atemp,atemp2humid)
+    print(f"ahumid {ahumid}")
+    alocation= map_solution_2(ahumid,aHumidity2Loc)
+
+    print(f"This is the locationlist {alocation}")
+
     abiggestlocation = 999999999999999999999999999999999999999999999999999999999999999999999999999999999
     for location in alocation:
-        if int(location) < abiggestlocation:
-            abiggestlocation = int(location)
-    return (abiggestlocation)
+        lowestlocation= int(location[0])
+        if lowestlocation<abiggestlocation:
+            abiggestlocation=lowestlocation
+    return(abiggestlocation)
 
 
 
@@ -458,6 +515,6 @@ humidity-to-location map:
     if (solution_test2== (perform_solution2(input_test))):
         print("Test 2 works")
     else:
-        print(perform_solution2(input_test))
+        pass;#print(perform_solution2(input_test))
 
     print(perform_solution2(input_actual))
