@@ -1079,7 +1079,9 @@ for line in (lines):
     #print(f"Line {i} solution: {line_solution} solution2 :{line_solution_2}")
     solution_2+=line_solution_2
     solution_1+=line_solution
-print(f"Test solution 1 {solution_1} Solution2 {solution_2}")
+answer_solution1 = 21
+answer_solution2 = 525152
+print(f"Test solution 1 {solution_1} {solution_1==answer_solution1} Solution2 {solution_2} {solution_2==answer_solution2}")
 
 lines = input_actual.splitlines()
 solution_1 = 0
