@@ -1,27 +1,65 @@
 def find_symmetry_index(pattern,pattern_list,patternnumber):
     temp_pattern_list = []
     output =[]
+    outputsol2 =[]
     columns = len(pattern)
+    smudge_list = []
+
     for x in range(1,columns):
         left = list(pattern[0:x])
         right = list(pattern [x:columns])
         reversed_left = list(reversed(left))
         if len(right) > len(left):
-            print(reversed_left,right[:len(left)])
+            #print(reversed_left,right[:len(left)])
             if reversed_left == right[:len(left)]:
-                print(f'Found one right bigger{reversed_left}, {right[:len(left)]}, {x}')
+                #print(f'Found one right bigger{reversed_left}, {right[:len(left)]}, {x}')
                 temp_pattern_list.append(x)
+            else:
+                smudge = find_num_differences(reversed_left,right[:len(left)])
+                if smudge != -1:
+                    smudge_list.append(smudge)
+                #print(f'Found a non-matching right bigger{reversed_left}, {right[:len(left)]}, {x}')
         elif len(right) < len(left):
             if reversed_left[:len(right)] == right:
-                print(f'Found one left bigger {reversed_left[:len(right)]}, {right}, {x}')
+                #print(f'Found one left bigger {reversed_left[:len(right)]}, {right}, {x}')
                 temp_pattern_list.append(x)
+            else:
+                smudge = find_num_differences(reversed_left[:len(right)], right)
+                if smudge != -1:
+                    smudge_list.append(smudge)
+               # print(f'Found a non-matching left bigger{reversed_left}, {right[:len(left)]}, {x}')
     if patternnumber>0:
         for x in pattern_list:
-            if x in temp_pattern_list:
+            if x in smudge_list:
                 output.append(x)
     else:
         output = temp_pattern_list
+
+    # if patternnumber > 0:
+    #     for x in pattern_list:
+    #         if x in temp_pattern_list:
+    #             outputsol2.append(x)
+    # else:
+    #     outputsol2 = temp_pattern_list
+
+    #print(f"smudge_list = {smudge_list} ")
     return output
+
+def find_num_differences(list2, list1):
+    difference =0
+    length_diff = len(list2)-len(list1)
+    smudge = -1
+    for i in range(len(list1)):
+        if list1[i] == (list2)[length_diff+i]:
+            difference +=1
+            smudge = i
+            print(f"{i} can be changed for a different result {list1} {list2}")
+    if difference == 1:
+        return smudge
+    else:
+        return -1
+
+
 
 # Example usage:
 input_test = """#.##..##.
@@ -1422,12 +1460,12 @@ input_actual = """#.######.#.
 .##...#..#.#...
 #####.#.......#"""
 
-patterns = input_actual.split("\n\n")
+patterns = input_test.split("\n\n")
 summed =0
 for pattern in patterns:
 
     pattern = pattern.splitlines()
-    print(pattern)
+    #print(pattern)
     i=0
     Horizontal = []
     for x in pattern:
@@ -1446,4 +1484,4 @@ for pattern in patterns:
     if len(vertical)>0:
         verticalindex = int(vertical[0])
     summed += horizontalindex + 100*verticalindex
-print(summed)
+print(f"Summed is {summed}")
