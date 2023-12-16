@@ -1,75 +1,55 @@
-import itertools
-from collections import Counter
-import time
-
-def calcpossibility(line,question_number,linenumber):
-    startsequence = line.split(" ")[1]
-    startoverview = line.split(" ")[0]
-    sequence = startsequence
-    overview = startoverview
-
-    splitsequence = sequence.split(',')
-    numhashtags = 0
-    for x in splitsequence:
-        numhashtags+=int(x)
-    ranged = 1
-    xtest = False
-    sequences_found_between_tests = 1
-
-    sequence_list = fill_pounds(overview,['#','.'])
-    numnotvalid = 0
-    start = time.time()
-    numentry =0
-
-    for x in sequence_list:
-        split = x.split('.')
-        counts= Counter(x)
-
-        if counts.get('#') == numhashtags:
-            print(x)
-            numentry+=1
-            j=-1
-            for i in range(len(split)):
-                j += 1
-                if len(split[i]) == 0:
-                    j-=1
-                if len(split[i]) != int(splitsequence[j]):
-                    numnotvalid+=1
-                    print("breakthisloop")
-                    break;
-    return numentry-numnotvalid
+from functools import cache
 
 
-def fill_pounds(s, chars):
-    for p in map(iter, itertools.product(chars, repeat=s.count('?'))):
-        yield ''.join(c if c != '?' else next(p) for c in s)
+def solve_for_line(line: str, with_multiplier=False) -> int:
+    steps, sequence = line.split()
+    shape = tuple(map(int, sequence.split(",")))
 
-def find_sequence(x,sequence,sequences_found):
-        split = x.split('.')
-        sequence_list_to_check = []
-        for d in split:
-            counts = Counter(d)
-            if len(counts)> 0 :
-                sequence_list_to_check.append(list(counts.values())[0])
-        if len(sequence_list_to_check) == len(sequence):
-            xFoundone = True
-            #print(f"checking {sequence_list_to_check} vs {sequence}")
-            for i in range(len(sequence)):
-                if int(sequence[i]) != int(sequence_list_to_check[i]):
-                    xFoundone = False
-                    break
-            if xFoundone:
-                sequences_found +=1
-        return sequences_found
+    if with_multiplier:
+        steps = "?".join([steps] * 5)
+        shape *= 5
 
-input_test = """???.### 1,1,3
+    return get_valid_solutions(steps, shape)
+
+@cache
+def get_valid_solutions(steps: str, sequence: tuple[int, ...]) -> int:
+
+    if not steps:# if there are no points to check, return true if all hashtags are found
+        return len(sequence) == 0
+
+    if not sequence: # if the sequence is already empty, then true if no hasthags in points left
+        return "#" not in steps
+
+
+    step, rest_of_steps = steps[0], steps[1:]
+
+    if step == ".": # first check if step=. and skip
+        return get_valid_solutions(rest_of_steps, sequence)
+
+    if step == "#": # if step = # then check if the sequence is already fulfilled/start end is already present
+        group = sequence[0]
+
+        if (
+            len(steps) >= group
+            and all(c != "." for c in steps[:group]) # not valid solution yet while there are still .
+            and (len(steps) == group or steps[group] != "#") # not valid yet if end of sequence is not a #
+        ):
+            return get_valid_solutions(steps[group + 1:], sequence[1:]) ## Skip the next point/? to make sequence valid
+
+        return 0 # return false if sequene is not fulfilled yet
+
+    if step == "?": #if questionmark then try both (. and # ) and return the solutions
+        return get_valid_solutions(f"#{rest_of_steps}", sequence) + get_valid_solutions(
+            f".{rest_of_steps}", sequence
+        )
+
+input_test= """???.### 1,1,3
 .??..??...?##. 1,1,3
 ?#?#?#?#?#?#?#? 1,3,1,6
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
-
-input_actual =""".?#??.??#???.?? 2,6,2
+actual_input = """.?#??.??#???.?? 2,6,2
 ?#??.?#.???#. 3,1,3
 .#??#?#?.?##?#. 6,5
 .#???##??.# 7,1
@@ -1069,27 +1049,9 @@ input_actual =""".?#??.??#???.?? 2,6,2
 ..?##???#????#..#? 3,4,2,1
 ?.#.??????.#?.#???? 1,1,3,2,3
 #?#??????? 3,4"""
-lines = input_test.splitlines()
-solution_1 = 0
-solution_2 = 0
-i=0
 
-
-for line in (lines):
-    start = time.time()
-    i+=1
-    line_solution = calcpossibility(line,1,i)
-    print(f"test number {i} done {line_solution} in {time.time()-start}s")
-    #line_solution_2 = calcpossibility(line,2,i)
-    #print(f"Line {i} solution: {line_solution} solution2 :{line_solution_2}")
-    #solution_2+=line_solution_2
-    solution_1+=line_solution
-answer_solution1 = 21
-answer_solution2 = 525152
-print(f"Test solution 1 {solution_1} {solution_1==answer_solution1} Solution2 {solution_2} {solution_2==answer_solution2}")
-
-lines = input_actual.splitlines()
-solution_1 = 0
-solution_2 = 0
-i=0
-
+lines = actual_input.splitlines()
+solution1=sum(solve_for_line(line) for line in lines)
+print(f"solution 1= {solution1}")
+solution2=sum(solve_for_line(line, with_multiplier=True) for line in lines)
+print(f"solution2 = {solution2}")
