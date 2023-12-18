@@ -807,13 +807,61 @@ class line_segment:
     x2 :int
     y1 : int
     y2: int
+    direction: int
+
+    def length(self,other):
+         if self.x1> self.x2:
+            return abs(self.x2-other)
+         else:
+             return abs(self.x1-other)
+
+
 
     def find_y(self,y):
         if self.y1<=y<= self.y2 or self.y2<=y<= self.y1:
             return True
 
     def __lt__(self,other):
-        return other.x1>self.x1
+        if self.x1 == self.x2:
+            smallest = self.x1
+        elif self.x1>self.x2:
+            smallest = self.x1
+        else:
+            smallest = self.x2
+
+        if other.x1 == other.x2:
+            othersmallest =other.x1
+        elif other.x1>other.x2:
+            othersmallest=other.x1
+        else:
+            othersmallest=other.x2
+
+        if smallest<othersmallest:
+            return True
+        elif smallest== othersmallest:
+             if self.isHorizontal():
+                 return True
+        else:
+            return False
+        
+    def isHorizontal(self):
+        return self.y1==self.y2
+    
+    def isVertical(self):
+        return self.x1==self.x2
+
+    def getLargestx(self):
+        if self.x1>self.x2:
+            return self.x1
+        else:
+            return self.x2
+
+    def getSmallest(self):
+        if self.x1<self.x2:
+            return self.x1
+        else:
+            return self.x2
+
 
 directions = {"R":(1, 0),  # 0 east
               "D":(0, 1),  # 1 south
@@ -827,7 +875,7 @@ sum_a=0
 with Image.new("RGBA", (800, 800), (255, 255, 255, 255)) as im:
     imageSizeW, imageSizeH = im.size
 
-    for i in input_actual.splitlines():
+    for i in input_test.splitlines():
         dir,l,col = i.split()
         for i in range(int(l)):
             im.putpixel((x, y), (255, 0, 0, 255))
@@ -851,19 +899,19 @@ directions = {0:(1, 0),  # 0 east
               2:(-1, 0),  # 2 west
               3:(0, -1)}  # 3 north
 
-
-
-
-
+# directions = {"R":(1, 0),  # 0 east
+#               "D":(0, 1),  # 1 south    x=0
+#               "L":(-1, 0),  # 2 west    y=0
+#               "U":(0, -1)}  # 3 north   minX=minY =0
 maxX=maxY=0
 minX=minY=0
 linelist =[]
 x=y=0
-for i in input_test.splitlines():
+for i in input_actual.splitlines():
     dir, col, l = i.split()
     length = int(l.strip("()#")[:-1],16)
     dir = int(l.strip("()#")[-1],16)
-
+    # length = int(col)
     xold = x
     yold = y
     x += length * directions[dir][0]
@@ -872,48 +920,55 @@ for i in input_test.splitlines():
     minY = min(minY,y)
     maxX = max(maxX,x)
     maxY= max(maxY,y)
-    segment = line_segment(xold,x,yold,y)
+    segment = line_segment(xold,x,yold,y,dir)
+    print(length, dir)
     linelist.append(segment)
 
-
+#
+#
 
 summed = 0
 prev_line = None
 for y in range(minY-1,maxY+1):
-    filtered_list = [f for f in linelist if f.find_y(y)]
-    filtered_list.sort()
-    inside = False
-    xprev = 0
-    partsum = 0
-    xPrevHorizontal = False
-    print(f'{y} of {maxY-1}')
-    for j in filtered_list:
-        if j.y1 == j.y2: # horizontal
-           # print('Horizontal')
-            xPrevHorizontal = True
-            partsum =abs(j.x2-j.x1)+1
-            xprev = j.x2;
-           # print(partsum,j,prev_line)
-        elif j.x1==j.x2:   #Vertical line
-            inside = not(inside)
-            if xPrevHorizontal:
-               inside = not(inside)
+    try:
+        filtered_list = [f for f in linelist if f.find_y(y)]
+        filtered_list.sort()
+        inside = False
+        xPrevsmall=xPrevHigh = 0
+        partsum = 0
+        xPrevHorizontal = False
+        #print(f'{y} out of {maxY+1}')
+        #print(filtered_list)
+        prev_line = None
+        subsum =0
+        prevpoint = -1
+        olddirection= 'W'
+        for j in filtered_list:
+            if j.isVertical():
+                if j.direction != olddirection:
+                    if inside:
+                       subsum+= j.getLargestx()-xPrevHigh+1
+                    elif not inside:
+                        #Zoek naar een horizontale in de filtered list die hier tussen zit
+                        for k in filtered_list:
+                            if k.isHorizontal():
+                                if (k.x1==xPrevHigh and k.x2==j.getLargestx()) or (k.x2==xPrevHigh and k.x1==j.getLargestx()):
+                                    subsum += j.getLargestx() - xPrevHigh-1
+                                    break
+                    inside=not(inside)
+                    xPrevHigh = j.getLargestx()
+                elif not inside and j.direction==olddirection:
+                    subsum += j.getLargestx()-xPrevHigh
+                #print(olddirection, j.direction, j, inside,subsum)
+                olddirection=j.direction
 
-            if not(inside):
-                  partsum =abs(j.x1-xprev)+1
+        #print(subsum)
 
-                  if xPrevHorizontal:
-                    # print(f'Adding this while previous=horizontal {y} {partsum},{j},{prev_line}')
-                     summed+=partsum
-                  else:
-                    # print(f'Adding this while previous=vertical {y} {partsum},{j},{prev_line}')
-                     summed+=partsum
-
-            xPrevHorizontal=False
-            xprev = j.x2;
-        prev_line = j
-    #print(summed)
-
+        #print(f"{y} withs subsum = {subsum}")
+        summed+=subsum
+    except KeyboardInterrupt:
+        print(y,minY-1,maxY+1)
+        pass
 print(summed)
 
-
+#
