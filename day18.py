@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+import math
 from PIL import Image, ImageDraw  # Import classes from the librar
 input_test = """R 6 (#70c710)
 D 5 (#0dc571)
@@ -899,76 +899,88 @@ directions = {0:(1, 0),  # 0 east
               2:(-1, 0),  # 2 west
               3:(0, -1)}  # 3 north
 
-# directions = {"R":(1, 0),  # 0 east
-#               "D":(0, 1),  # 1 south    x=0
-#               "L":(-1, 0),  # 2 west    y=0
-#               "U":(0, -1)}  # 3 north   minX=minY =0
+directions = {"R":(1, 0),  # 0 east
+              "D":(0, 1),  # 1 south    x=0
+              "L":(-1, 0),  # 2 west    y=0
+              "U":(0, -1)}  # 3 north   minX=minY =0
 maxX=maxY=0
 minX=minY=0
 linelist =[]
 x=y=0
-for i in input_actual.splitlines():
-    dir, col, l = i.split()
-    length = int(l.strip("()#")[:-1],16)
-    dir = int(l.strip("()#")[-1],16)
-    # length = int(col)
-    xold = x
-    yold = y
-    x += length * directions[dir][0]
-    y += length * directions[dir][1]
-    minX = min(minX,x)
-    minY = min(minY,y)
-    maxX = max(maxX,x)
-    maxY= max(maxY,y)
-    segment = line_segment(xold,x,yold,y,dir)
-    print(length, dir)
-    linelist.append(segment)
+xList =[]
+corners =[]
+
+
+def decode1(lines):
+    return [(d, int(n)) for d, n, _ in lines]
+
+
+def decode2(lines):
+    return [("RDLU"[int(h[7])], int(h[2:7], 16)) for _, _, h in lines]
+
+
+def find_area(instructions):
+    perimeter, shoelace = 0, 0
+    x, y, pts = 0, 0, [(0, 0)]
+    for d, n in instructions:
+        dx, dy = {"R": (1, 0), "L": (-1, 0), "U": (0, -1), "D": (0, 1)}[d]
+        x, y = x + dx * n, y + dy * n
+        pts.append((x, y))
+        perimeter += n
+
+    shoelace = sum((a[0] * b[1] - b[0] * a[1]) for a, b in zip(pts, pts[1:])) // 2
+    return shoelace + perimeter // 2 + 1
+
+
+lines = [line.split() for line in input_actual.splitlines()]
+print("Part 1:", find_area(decode1(lines)))
+print("Part 2:", find_area(decode2(lines)))
 
 #
 #
-
-summed = 0
-prev_line = None
-for y in range(minY-1,maxY+1):
-    try:
-        filtered_list = [f for f in linelist if f.find_y(y)]
-        filtered_list.sort()
-        inside = False
-        xPrevsmall=xPrevHigh = 0
-        partsum = 0
-        xPrevHorizontal = False
-        #print(f'{y} out of {maxY+1}')
-        #print(filtered_list)
-        prev_line = None
-        subsum =0
-        prevpoint = -1
-        olddirection= 'W'
-        for j in filtered_list:
-            if j.isVertical():
-                if j.direction != olddirection:
-                    if inside:
-                       subsum+= j.getLargestx()-xPrevHigh+1
-                    elif not inside:
-                        #Zoek naar een horizontale in de filtered list die hier tussen zit
-                        for k in filtered_list:
-                            if k.isHorizontal():
-                                if (k.x1==xPrevHigh and k.x2==j.getLargestx()) or (k.x2==xPrevHigh and k.x1==j.getLargestx()):
-                                    subsum += j.getLargestx() - xPrevHigh-1
-                                    break
-                    inside=not(inside)
-                    xPrevHigh = j.getLargestx()
-                elif not inside and j.direction==olddirection:
-                    subsum += j.getLargestx()-xPrevHigh
-                #print(olddirection, j.direction, j, inside,subsum)
-                olddirection=j.direction
-
-        #print(subsum)
-
-        #print(f"{y} withs subsum = {subsum}")
-        summed+=subsum
-    except KeyboardInterrupt:
-        print(y,minY-1,maxY+1)
-        pass
-print(summed)
-
 #
+# summed = 0
+# prev_line = None
+# for y in range(minY-1,maxY+1):
+#     try:
+#         filtered_list = [f for f in linelist if f.find_y(y)]
+#         filtered_list.sort()
+#         inside = False
+#         xPrevsmall=xPrevHigh = 0
+#         partsum = 0
+#         xPrevHorizontal = False
+#         #print(f'{y} out of {maxY+1}')
+#         #print(filtered_list)
+#         prev_line = None
+#         subsum =0
+#         prevpoint = -1
+#         olddirection= 'W'
+#         for j in filtered_list:
+#             if j.isVertical():
+#                 if j.direction != olddirection:
+#                     if inside:
+#                        subsum+= j.getLargestx()-xPrevHigh+1
+#                     elif not inside:
+#                         #Zoek naar een horizontale in de filtered list die hier tussen zit
+#                         for k in filtered_list:
+#                             if k.isHorizontal():
+#                                 if (k.x1==xPrevHigh and k.x2==j.getLargestx()) or (k.x2==xPrevHigh and k.x1==j.getLargestx()):
+#                                     subsum += j.getLargestx() - xPrevHigh-1
+#                                     break
+#                     inside=not(inside)
+#                     xPrevHigh = j.getLargestx()
+#                 elif not inside and j.direction==olddirection:
+#                     subsum += j.getLargestx()-xPrevHigh
+#                 #print(olddirection, j.direction, j, inside,subsum)
+#                 olddirection=j.direction
+#
+#         #print(subsum)
+#
+#         #print(f"{y} withs subsum = {subsum}")
+#         summed+=subsum
+#     except KeyboardInterrupt:
+#         print(y,minY-1,maxY+1)
+#         pass
+# print(summed)
+#
+# #
