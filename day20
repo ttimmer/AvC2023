@@ -1,0 +1,70 @@
+from dataclasses import dataclass
+input_test = """broadcaster -> a
+%a -> inv, con
+&inv -> b
+%b -> con
+&con -> output"""
+
+@dataclass
+class typedclass():
+    prefix: str
+    name: str
+    output_to : list
+    inputs : []
+    states_bool : []
+    state : False
+
+    def add_input_states(self,name):
+        self.inputs.append(name)
+        self.states_bool.append(0)
+
+    def change_state(self,pulse,name):
+        if self.prefix == '%':
+            if pulse == False:
+                self.state = not self.state
+            return self.state
+        elif self.prefix == '&':
+            index= self.inputs.index(name)
+            self.states_bool[index] = pulse
+            for x in self.states_bool:
+                if not x:
+                    self.state = False
+                    return False
+            self.state=True
+            return True
+
+
+input_lines = input_test.splitlines()
+types = []
+broadcast_to=[]
+for line in input_lines:
+    if 'broadcaster' in line:
+        broadcast_to = line.split(' -> ')[1].split(', ')
+        types.append(typedclass('','broadcaster',broadcast_to,[],[],False))
+    else:
+        split_line = line.split(' -> ')
+        prefix = split_line[0][0]
+        name=split_line[0][1:]
+        output_to = split_line[1].split(', ')
+        print(output_to)
+        types.append(typedclass(prefix,name,output_to,[],[],False))
+
+print(types)
+for type in types:
+    for output in type.output_to:
+        for other in types:
+            if other.name == output:
+                other.add_input_states(type.name)
+                break
+def find_index(name,types):
+    for i in range(len(types)):
+        if types[i].name == name:
+            return i
+    return -1
+for i in range( len(types)):
+    for output in types[i].output_to:
+        index=find_index(output,types)
+        if not index==-1:
+            types[index].change_state(types[i].state,types[i].name)
+
+print(types)
